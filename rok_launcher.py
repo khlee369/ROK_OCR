@@ -3,11 +3,10 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-import win32api
-import win32con
-import win32gui
+import win32api, win32con, win32gui
 from util import *
 from configs import *
+from mss.tools import to_png
 from mss import mss
 
 class NoxManager:
@@ -28,6 +27,18 @@ class NoxManager:
         self.capture_monitor['width'] = 60
         self.capture_monitor['height'] = 70
         self.capture_img = cv2.imread(img_dict['capture'])
+
+        self.r1_monitor = self.nox_monitor.copy()
+        self.r1_monitor['left'] += 170
+        self.r1_monitor['top'] += 610
+        self.r1_monitor['width'] = 400
+        self.r1_monitor['height'] = 80
+
+        self.r1_monitor10 = self.r1_monitor.copy()
+        self.r1_monitor10['left'] -= 10
+        self.r1_monitor10['top'] -= 10
+        self.r1_monitor10['width'] += 10
+        self.r1_monitor10['height'] += 10
 
         nm = get_screen(self.sct, self.nox_monitor)
         plt.imshow(nm)
@@ -119,7 +130,118 @@ class NoxManager:
             self.click_relative_pos(capture_pos)
             time.sleep(0.5)
 
-    def caputer_members_all(self):
+
+
+    def capture_members(self, pos_list, img_path, div, diff_thr=0.4, verbose=False):
+        for m_pos in pos_list:
+            self.click_relative_pos(m_pos)
+            time.sleep(0.5)
+            profile_pos, diff = self.get_relative_pos(img_path, div=div)
+            if verbose:
+                print('profile_diff: ', diff)
+            if diff < diff_thr:
+                self.click_relative_pos(profile_pos)
+                time.sleep(0.5)
+                self.capture()
+                time.sleep(0.5)
+                self.click_relative_pos(profile_close_pos)
+                time.sleep(0.5)
+
+    def capture_R4(self):
+        self.capture_members(R4_pos_U, img_dict['4menus'], div=1)
+        R3_pos, R3_diff = self.get_relative_pos(img_dict['R3'])
+        if R3_pos[0] > R3_thr:
+            self.capture_members(R4_pos_D, img_dict['4menus'], div=1)
+
+    def capture_R3(self, dragged=False):
+        if not dragged:
+            R3_pos, R3_diff = self.get_relative_pos(img_dict['R3'])
+            self.click_relative_pos(R3_pos)
+            time.sleep(0.3)
+            self.relative_drag(R3_pos, np.array([r3r2_H_to, R3_pos[1]]), delay=1.0)
+
+        last_line = False
+        max_cnt = 20
+        cnt = 0
+
+        # 멤버수가 4명,6명 보다 적은경우 에러가 날 수 있음
+        while(not last_line and cnt < max_cnt):
+            self.capture_members(members_pos, img_dict['7menus'], div=2)
+            self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
+            R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
+            print('R1 diff : ', R1_diff)
+            if R1_diff < diff_thr:
+                last_line = True
+                self.capture_members(members_pos, img_dict['7menus'], div=2)
+            cnt += 1
+
+    def capture_R2(self, dragged=False):
+        if not dragged:
+            R2_pos, R2_diff = self.get_relative_pos(img_dict['R2'])
+            self.click_relative_pos(R2_pos)
+            time.sleep(0.3)
+            self.relative_drag(R2_pos, np.array([r3r2_H_to, R2_pos[1]]), delay=1.0)
+
+        last_line = False
+        max_cnt = 20
+        cnt = 0
+
+        while(not last_line and cnt < max_cnt):
+            self.capture_members(members_pos, img_dict['7menus'], div=2)
+            self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
+            R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
+            print('R1 diff : ', R1_diff)
+            if R1_diff < diff_thr:
+                last_line = True
+                self.capture_members(members_pos, img_dict['7menus'], div=2)
+            cnt += 1
+
+        # 맨마지막줄은 캡쳐가 안됨으로 추가
+        last_members = [[MHs[4], MW_left], [MHs[4], MW_right]]
+        self.capture_members(last_members, img_dict['7menus'], div=2)
+
+    def capture_R1(self, dragged=False):
+        # break condition 생각해봐야됨
+        # 같은 멤버가 또 나오는지 체크를 해봐야 되는데
+        # 닉네임으로만 비교해야 되면 정확도가 떨어진다
+        # 차라리 숫자 OCR을 하고 몇명을 체크해야되는지 사전에 알아보는게
+        # 더 나을수도 있음
+
+        if not dragged:
+            R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
+            self.click_relative_pos(R1_pos)
+            time.sleep(0.3)
+            self.relative_drag(R1_pos, np.array([r3r2_H_to, R1_pos[1]]), delay=1.0)
+
+        last_line = False
+        max_cnt = 20
+        cnt = 0
+
+        while(not last_line and cnt < max_cnt):
+            extend6 = [[MHs[4], MW_left],
+                       [MHs[5], MW_left],
+                       [MHs[4], MW_right],
+                       [MHs[5], MW_right]]
+            members6_pos = np.vstack([members_pos, extend6])
+            self.capture_members(members6_pos, img_dict['7menus'], div=2)
+
+            # 마지막줄 캡쳐 -> 드래그 -> 비교
+            sct_img = self.sct.grab(self.r1_monitor)
+            to_png(sct_img.rgb, sct_img.size, output=img_dict['r1_lastline'])
+            
+            self.relative_drag(md_drag_from6, md_drag_to6, delay=1.0)
+            time.sleep(1.0)
+
+            screen = get_screen(self.sct, self.r1_monitor10)
+            r1_lastline_img = cv2.imread(img_dict['r1_lastline'])
+            _, lastline_diff = find_img_pos(screen, r1_lastline_img, interval=1)
+
+            if lastline_diff < 0.005:
+                last_line = True
+            cnt += 1
+
+
+    def capture_members_all(self):
         print()
         print('------------------------------------------')
         input('Run Rise of Kingdoms and Open the menu to show alliance tab')
@@ -145,6 +267,8 @@ class NoxManager:
         # R2 체크
 
         # R1 체크
+
+        pass
 
 
     def get_main_menu_pos(self):

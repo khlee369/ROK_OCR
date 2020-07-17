@@ -46,9 +46,9 @@ def find_img_pos(screen, img, dist=None, interval=5, verbose=False):
     h, w = img.shape[0:2]
     min_diff = 10000
     pos = np.array([0,0])
-    all_pixel_num = (H-h)*(W-w)
-    for i in range(0, H-h, interval):
-        for j in range(0, W-w, interval):
+    all_pixel_num = (H-h+1)*(W-w+1)
+    for i in range(0, H-h+1, interval):
+        for j in range(0, W-w+1, interval):
             image_diff = get_image_difference(img, screen[i:i+h, j:j+w])
             if min_diff > image_diff:
                 min_diff = image_diff

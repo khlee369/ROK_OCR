@@ -62,6 +62,7 @@ img_dict = {
     '4menus': img_path + '4menus.PNG',
     '7menus': img_path + '7menus.PNG',
     'capture': img_path + 'capture.PNG',
+    'r1_lastline': img_path + 'r1_lastline.PNG',
 }
 
 # R3, R2 드래그 해서 올리기 할때
@@ -87,3 +88,23 @@ md_drag_to4 = np.array([170, 200])
 # tmp_monitor['height'] = 70
 
 # screen = get_screen(manager.sct, tmp_monitor)
+
+
+# R1은 마지막 줄 체크를 다르게
+# r1_monitor = manager.nox_monitor.copy()
+# r1_monitor['left'] += 170
+# r1_monitor['top'] += 610
+# r1_monitor['width'] = 400
+# r1_monitor['height'] = 80
+
+# screen = get_screen(manager.sct, r1_monitor)
+# plt.imshow(screen)
+
+# sct_img = manager.sct.grab(r1_monitor)
+# mss.tools.to_png(sct_img.rgb, sct_img.size, output='./images/r1_lastline.PNG')
+
+# r1_monitor10 = r1_monitor.copy()
+# r1_monitor10['left'] -= 10
+# r1_monitor10['top'] -= 10
+# r1_monitor10['width'] += 10
+# r1_monitor10['height'] += 10
