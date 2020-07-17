@@ -1,0 +1,89 @@
+# Rise of Kingdoms fixed position
+# NOX Player resolution : H x W == 720 x 1280
+
+import numpy as np
+
+diff_thr = 0.023
+
+capture_pos = np.array([145, 1372])
+profile_close_pos = np.array([89, 1091])
+nox_menu_pos = np.array([469, 1311])
+
+R4_H1 = 355
+R4_H2 = 480
+R4_Ws = [220, 460, 700, 930]
+
+R3_thr = 500
+
+MW_left = 200
+MW_right = 680
+
+# 멤버를 총 6명 선택할수 있으나 맨밑에서 예외처리가 발생
+# R3, R2, R1 아이콘이 눌리는 경우가 있기 떄문에 4명만 누르도록 함
+
+MHs = [258, 338, 413, 497, 575, 654]
+
+members_pos = [[MHs[0], MW_left],
+               [MHs[1], MW_left],
+               [MHs[2], MW_left],
+               [MHs[3], MW_left],
+               [MHs[0], MW_right],
+               [MHs[1], MW_right],
+               [MHs[2], MW_right],
+               [MHs[3], MW_right]]
+members_pos = np.array(members_pos)
+
+R4_pos_U = [[R4_H1, R4_Ws[0]],
+            [R4_H1, R4_Ws[1]],
+            [R4_H1, R4_Ws[2]],
+            [R4_H1, R4_Ws[3]]]
+R4_pos_U = np.array(R4_pos_U)
+
+R4_pos_D = [[R4_H2, R4_Ws[0]],
+            [R4_H2, R4_Ws[1]],
+            [R4_H2, R4_Ws[2]],
+            [R4_H2, R4_Ws[3]]]
+R4_pos_D = np.array(R4_pos_D)
+
+img_path = './images/'
+img_names = ['nox.PNG', 'menu.PNG', 'alliance.PNG', 'R1.PNG',
+             'R2.PNG', 'R3.PNG', 'R4.PNG', 'info.PNG', 
+             '4menus.PNG', '7menus.PNG', 
+             'capture.PNG']
+img_dict = {
+    'nox': img_path + 'nox.PNG',
+    'menu': img_path + 'menu.PNG',
+    'alliance': img_path + 'alliance.PNG',
+    'R1': img_path + 'R1.PNG',
+    'R2': img_path + 'R2.PNG',
+    'R3': img_path + 'R3.PNG',
+    'R4': img_path + 'R4.PNG',
+    'info': img_path + 'info.PNG',
+    '4menus': img_path + '4menus.PNG',
+    '7menus': img_path + '7menus.PNG',
+    'capture': img_path + 'capture.PNG',
+}
+
+# R3, R2 드래그 해서 올리기 할때
+# manager.relative_drag(img_pos, np.array([170, img_pos[1]]), delay=1.0)
+# img_pos == R3 image pos
+
+r3r2_H_to = 170
+
+md_drag_from6 = np.array([510, 200])
+md_drag_to6 = np.array([10, 200])
+
+md_drag_from4 = np.array([500, 200])
+md_drag_to4 = np.array([170, 200])
+
+
+# caputre 아이콘이 없는 경우 체크해봐야됨
+# form np.array([120, 1340])
+# to   np.array([170, 1400])
+# tmp_monitor = manager.nox_monitor.copy()
+# tmp_monitor['left'] += 1340
+# tmp_monitor['top'] += 110
+# tmp_monitor['width'] = 60
+# tmp_monitor['height'] = 70
+
+# screen = get_screen(manager.sct, tmp_monitor)
