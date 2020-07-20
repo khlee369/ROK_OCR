@@ -103,6 +103,9 @@ class NoxManager:
         elif div == 2:
             pos += (np.array(img.shape[0:2])/8).astype('int')
             pos += np.array([0, img.shape[1]//8])
+        elif div == 3:
+            pos += (np.array(img.shape[0:2])/4).astype('int')
+            pos += np.array([0, img.shape[1]//4])
         return pos, img_diff
 
     def get_relative_mouse_pos(self):
@@ -131,8 +134,7 @@ class NoxManager:
             time.sleep(0.5)
 
 
-
-    def capture_members(self, pos_list, img_path, div, diff_thr=0.4, verbose=False):
+    def capture_members(self, pos_list, img_path, div, diff_thr=0.04, verbose=False):
         for m_pos in pos_list:
             self.click_relative_pos(m_pos)
             time.sleep(0.5)
@@ -147,13 +149,34 @@ class NoxManager:
                 self.click_relative_pos(profile_close_pos)
                 time.sleep(0.5)
 
-    def capture_R4(self):
-        self.capture_members(R4_pos_U, img_dict['4menus'], div=1)
+    def capture_leader(self, other=False):
+        menus = '4menus'
+        div = 1
+        if other:
+            menus = '2menus'
+            div = 3
+
+        self.capture_members([leader_pos], img_dict[menus], div=div)
+
+    def capture_R4(self, other=False):
+        menus = '4menus'
+        div = 1
+        if other:
+            menus = '2menus'
+            div = 3
+
+        self.capture_members(R4_pos_U, img_dict[menus], div=div)
         R3_pos, R3_diff = self.get_relative_pos(img_dict['R3'])
         if R3_pos[0] > R3_thr:
-            self.capture_members(R4_pos_D, img_dict['4menus'], div=1)
+            self.capture_members(R4_pos_D, img_dict[menus], div=div)
 
-    def capture_R3(self, dragged=False):
+    def capture_R3(self, dragged=False, other=False):
+        menus = '7menus'
+        div = 2
+        if other:
+            menus = '2menus'
+            div = 3
+
         if not dragged:
             R3_pos, R3_diff = self.get_relative_pos(img_dict['R3'])
             self.click_relative_pos(R3_pos)
@@ -166,16 +189,22 @@ class NoxManager:
 
         # 멤버수가 4명,6명 보다 적은경우 에러가 날 수 있음
         while(not last_line and cnt < max_cnt):
-            self.capture_members(members_pos, img_dict['7menus'], div=2)
+            self.capture_members(members_pos, img_dict[menus], div=div)
             self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
             R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
             print('R1 diff : ', R1_diff)
             if R1_diff < diff_thr:
                 last_line = True
-                self.capture_members(members_pos, img_dict['7menus'], div=2)
+                self.capture_members(members_pos, img_dict[menus], div=div)
             cnt += 1
 
-    def capture_R2(self, dragged=False):
+    def capture_R2(self, dragged=False, other=False):
+        menus = '7menus'
+        div = 2
+        if other:
+            menus = '2menus'
+            div = 3
+
         if not dragged:
             R2_pos, R2_diff = self.get_relative_pos(img_dict['R2'])
             self.click_relative_pos(R2_pos)
@@ -187,25 +216,26 @@ class NoxManager:
         cnt = 0
 
         while(not last_line and cnt < max_cnt):
-            self.capture_members(members_pos, img_dict['7menus'], div=2)
+            self.capture_members(members_pos, img_dict[menus], div=div)
             self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
             R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
             print('R1 diff : ', R1_diff)
             if R1_diff < diff_thr:
                 last_line = True
-                self.capture_members(members_pos, img_dict['7menus'], div=2)
+                self.capture_members(members_pos, img_dict[menus], div=div)
             cnt += 1
 
         # 맨마지막줄은 캡쳐가 안됨으로 추가
         last_members = [[MHs[4], MW_left], [MHs[4], MW_right]]
-        self.capture_members(last_members, img_dict['7menus'], div=2)
+        self.capture_members(last_members, img_dict[menus], div=div)
 
-    def capture_R1(self, dragged=False):
-        # break condition 생각해봐야됨
-        # 같은 멤버가 또 나오는지 체크를 해봐야 되는데
-        # 닉네임으로만 비교해야 되면 정확도가 떨어진다
-        # 차라리 숫자 OCR을 하고 몇명을 체크해야되는지 사전에 알아보는게
-        # 더 나을수도 있음
+    def capture_R1(self, dragged=False, other=False):
+        menus = '7menus'
+        div = 2
+        if other:
+            menus = '2menus'
+            div = 3
+
 
         if not dragged:
             R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
@@ -223,7 +253,7 @@ class NoxManager:
                        [MHs[4], MW_right],
                        [MHs[5], MW_right]]
             members6_pos = np.vstack([members_pos, extend6])
-            self.capture_members(members6_pos, img_dict['7menus'], div=2)
+            self.capture_members(members6_pos, img_dict[menus], div=div)
 
             # 마지막줄 캡쳐 -> 드래그 -> 비교
             sct_img = self.sct.grab(self.r1_monitor)
@@ -241,53 +271,41 @@ class NoxManager:
             cnt += 1
 
 
-    def capture_members_all(self):
+    def capture_members_all(self, other=False):
         print()
         print('------------------------------------------')
         input('Run Rise of Kingdoms and Open the menu to show alliance tab')
         print()
-        input('open side bar of nox player to show captuer icon')
+        input('Click members tab to show members')
+        print()
+        input('Open side bar of nox player to show captuer icon')
         print('------------------------------------------')
         print('Now start to capture')
 
-
-        # R4 체크
-        # 윗줄 Height : 355
-        # 아랫줄 Height : 480
-        # Width 1,2,3,4 : 220, 460, 700, 930
-        # R3 이미지 위치 확인, Rel_pos Height < 500 이하면 R4 한줄
-        # 정보창 팝업 안되도 계속 진행
-
-        # R4 윗줄 캡쳐
-
-        # R3 아이콘 위치 확인 후
-
-        # R3 체크
-
-        # R2 체크
-
-        # R1 체크
-
-        pass
+        self.capture_leader(other=other)
+        self.capture_R4(other=other)
+        self.capture_R3(other=other)
+        self.capture_R2(other=other)
+        self.capture_R1(other=other)
 
 
-    def get_main_menu_pos(self):
-        print()
-        print('------------------------------------------')
-        input('Run Rise of Kingdoms and Open the menu to show alliance tab')
-        print('Now Find Menu Positions')
-        print()
-        self.combat_pos = self.get_relative_pos(
-            cv2.imread('./image_files/combat.PNG'))[0][0]
-        print('Compat Pos Obtained')
-        self.restore_pos = self.get_relative_pos(
-            cv2.imread('./image_files/restore.PNG'))[0][0]
-        print('Restore Pos Obtained')
-        self.formation_pos = self.get_relative_pos(
-            cv2.imread('./image_files/formation.PNG'))[0][0]
-        print('Formation Pos Obtained')
-        self.factory_pos = self.get_relative_pos(
-            cv2.imread('./image_files/factory.PNG'))[0][0]
-        print('Factory Pos Obtained')
-        print()
-        print('Finished')
+    # def get_main_menu_pos(self):
+    #     print()
+    #     print('------------------------------------------')
+    #     input('Run Rise of Kingdoms and Open the menu to show alliance tab')
+    #     print('Now Find Menu Positions')
+    #     print()
+    #     self.combat_pos = self.get_relative_pos(
+    #         cv2.imread('./image_files/combat.PNG'))[0][0]
+    #     print('Compat Pos Obtained')
+    #     self.restore_pos = self.get_relative_pos(
+    #         cv2.imread('./image_files/restore.PNG'))[0][0]
+    #     print('Restore Pos Obtained')
+    #     self.formation_pos = self.get_relative_pos(
+    #         cv2.imread('./image_files/formation.PNG'))[0][0]
+    #     print('Formation Pos Obtained')
+    #     self.factory_pos = self.get_relative_pos(
+    #         cv2.imread('./image_files/factory.PNG'))[0][0]
+    #     print('Factory Pos Obtained')
+    #     print()
+    #     print('Finished')

@@ -3,11 +3,13 @@
 
 import numpy as np
 
+nox_size = (720, 1280)
 diff_thr = 0.023
 
 capture_pos = np.array([145, 1372])
 profile_close_pos = np.array([89, 1091])
 nox_menu_pos = np.array([469, 1311])
+leader_pos = np.array([149, 443])
 
 R4_H1 = 355
 R4_H2 = 480
@@ -46,10 +48,6 @@ R4_pos_D = [[R4_H2, R4_Ws[0]],
 R4_pos_D = np.array(R4_pos_D)
 
 img_path = './images/'
-img_names = ['nox.PNG', 'menu.PNG', 'alliance.PNG', 'R1.PNG',
-             'R2.PNG', 'R3.PNG', 'R4.PNG', 'info.PNG', 
-             '4menus.PNG', '7menus.PNG', 
-             'capture.PNG']
 img_dict = {
     'nox': img_path + 'nox.PNG',
     'menu': img_path + 'menu.PNG',
@@ -59,10 +57,11 @@ img_dict = {
     'R3': img_path + 'R3.PNG',
     'R4': img_path + 'R4.PNG',
     'info': img_path + 'info.PNG',
+    '2menus': img_path + '2menus.PNG',
     '4menus': img_path + '4menus.PNG',
     '7menus': img_path + '7menus.PNG',
     'capture': img_path + 'capture.PNG',
-    'r1_lastline': img_path + 'r1_lastline.PNG',
+    'r1_lastline': img_path + 'r1_lastline.PNG', # this is changable
 }
 
 # R3, R2 드래그 해서 올리기 할때
@@ -108,3 +107,13 @@ md_drag_to4 = np.array([170, 200])
 # r1_monitor10['top'] -= 10
 # r1_monitor10['width'] += 10
 # r1_monitor10['height'] += 10
+
+tesseract_path = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+# pytesseract.pytesseract.tesseract_cmd = tesseract_path
+profile_path = './Screenshots/'
+
+crop_dict = {
+    'ID' : np.array([185, 216, 595, 672], dtype=int),
+    'power' : np.array([290, 320, 690, 880], dtype=int),
+    'kill' : np.array([290, 320, 880, 1050], dtype=int),
+}
