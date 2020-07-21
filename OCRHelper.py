@@ -10,8 +10,8 @@ import pytesseract
 # tesseract_path = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
-profile_path = './Screenshots/'
-profile_list = glob.glob(profile_path + '*.png')
+# profile_path = './Screenshots/'
+# profile_list = glob.glob(profile_path + '*.png')
 
 class Player():
     def __init__(self, ID, power, kill):
