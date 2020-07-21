@@ -108,6 +108,7 @@ md_drag_to4 = np.array([170, 200])
 # r1_monitor10['width'] += 10
 # r1_monitor10['height'] += 10
 
+# 스크린샷 위치 : C:\Users\KH_Home\Nox_share\ImageShare\Screenshots
 tesseract_path = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 # pytesseract.pytesseract.tesseract_cmd = tesseract_path
 profile_path = './Screenshots/'
