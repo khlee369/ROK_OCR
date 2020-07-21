@@ -64,7 +64,7 @@ def load_id2name(file_path, id2name=None):
     
     return id2name
 
-def ocr_profiles(profile_list=profile_list, id2name=load_id2name('id2name.xlsx')):
+def ocr_profiles(profile_list, id2name=load_id2name('id2name.xlsx')):
     Players = dict([])
     L = len(profile_list)
     for i, fn in enumerate(profile_list):
