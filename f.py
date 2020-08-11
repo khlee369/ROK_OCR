@@ -35,6 +35,7 @@ def find_img_pos_multi_target(screen, img, result, W_start, W_end, interval=5):
     H, W = screen.shape[0:2]
     h, w = img.shape[0:2]
     min_diff = 10000
+    pos = np.array([0,0])
     W_min = min(W_end+1, W-w+1)
     for i in range(0, H-h+1, interval):
         for j in range(W_start, W_min, interval):
