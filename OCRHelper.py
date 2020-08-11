@@ -50,8 +50,14 @@ def load_id2name(file_path, id2name=None):
     # if you want to expand id2name with new xlsx,
     # then give argument like id2name=load_id2name('id2name.xlsx')
 
-    df_id2name = pd.read_excel(file_path)
-    print('Loaded {} as id2name'.format(file_path))
+    try:
+        df_id2name = pd.read_excel(file_path)
+        print('Loaded {} as id2name'.format(file_path))
+    except FileNotFoundError:
+        print('No such file or directory {}'.format(file_path))
+        print('Function will return empty dictionary')
+        return dict([])
+        
     if id2name==None:
         id2name = dict([])
 
