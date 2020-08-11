@@ -4,7 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import win32api, win32con, win32gui
+import time
 from mss import mss
+from multiprocessing import Process, Queue
+
+import f
 
 def random_sleep(sec):
     time.sleep(sec + 0.3*(np.random.rand()-0.5))
@@ -40,27 +44,101 @@ def find_img_pos_old(screen, img, count=1, dist=None, interval=5, verbose=False)
                 print('\ron scanning... {:.2f}%'.format(current_pixel_num/all_pixel_num*100), end='')
     return pos, min_commutative_image_diff
 
+def find_img_pos(screen, img, result=None, W_start=0, W_end=1280, single=True, interval=5, verbose=False):
+    s = time.time()
+    H, W = screen.shape[0:2]
+    h, w = img.shape[0:2]
+    min_diff = 10000
+    pos = np.array([0,0])
 
-def find_img_pos(screen, img, dist=None, interval=5, verbose=False):
+    if single:
+        for i in range(0, H-h+1, interval):
+            for j in range(0, W-w+1, interval):
+                image_diff = get_image_difference(img, screen[i:i+h, j:j+w])
+                if min_diff > image_diff:
+                    min_diff = image_diff
+                    pos = np.array([i, j], dtype=np.int32)
+        # print(time.time() - s)
+        return pos, min_diff
+
+    else:
+        W_min = min(W_end+1, W-w+1)
+        for i in range(0, H-h+1, interval):
+            for j in range(W_start, W_min, interval):
+                image_diff = get_image_difference(img, screen[i:i+h, j:j+w])
+                if min_diff > image_diff:
+                    min_diff = image_diff
+                    pos = np.array([i, j], dtype=np.int32)
+                    
+        result.put((pos, min_diff))
+        return
+
+def find_img_pos_multi_target(screen, img, result, W_start, W_end, interval=5):
+    H, W = screen.shape[0:2]
+    h, w = img.shape[0:2]
+    min_diff = 10000
+    W_min = min(W_end+1, W-w+1)
+    for i in range(0, H-h+1, interval):
+        for j in range(W_start, W_min, interval):
+            image_diff = get_image_difference(img, screen[i:i+h, j:j+w])
+            if min_diff > image_diff:
+                min_diff = image_diff
+                pos = np.array([i, j], dtype=np.int32)
+                
+    result.put((pos, min_diff))
+    return
+
+def find_img_pos_multi(screen, img):
+    s = time.time()
     H, W = screen.shape[0:2]
     h, w = img.shape[0:2]
     min_diff = 10000
     pos = np.array([0,0])
     all_pixel_num = (H-h+1)*(W-w+1)
-    for i in range(0, H-h+1, interval):
-        for j in range(0, W-w+1, interval):
-            image_diff = get_image_difference(img, screen[i:i+h, j:j+w])
-            if min_diff > image_diff:
-                min_diff = image_diff
-                pos = np.array([i, j], dtype=np.int32)
-
-            if verbose:
-                current_pixel_num = i*(W-w)+j
-                # sys.stdout.write('\ron scanning... {:.2f}%'.format(current_pixel_num/all_pixel_num*100))
-                print('\ron scanning... {:.2f}%'.format(
-                    current_pixel_num/all_pixel_num*100), end='')
+    
+    Ws = [0, 1*W//4, 2*W//4, 3*W//4, W]
+    result = Queue()
+    procs = []
+    for i in range(4):
+        proc = Process(target=f.find_img_pos_multi_target, args=(screen, img, result, Ws[i], Ws[i+1]))
+        procs.append(proc)
+        proc.start()
+    
+    results = []
+    for i in range(4):
+        results.append(result.get())
+    
+    pos, min_diff = min(results, key=lambda x : x[1])
+    
+    result.close()
+    result.join_thread()
+    
+    for proc in procs:
+        proc.join()
+    # print(time.time() - s)
     return pos, min_diff
 
+
+
+# def find_img_pos(screen, img, dist=None, interval=5, verbose=False):
+#     H, W = screen.shape[0:2]
+#     h, w = img.shape[0:2]
+#     min_diff = 10000
+#     pos = np.array([0,0])
+#     all_pixel_num = (H-h+1)*(W-w+1)
+#     for i in range(0, H-h+1, interval):
+#         for j in range(0, W-w+1, interval):
+#             image_diff = get_image_difference(img, screen[i:i+h, j:j+w])
+#             if min_diff > image_diff:
+#                 min_diff = image_diff
+#                 pos = np.array([i, j], dtype=np.int32)
+
+#             if verbose:
+#                 current_pixel_num = i*(W-w)+j
+#                 # sys.stdout.write('\ron scanning... {:.2f}%'.format(current_pixel_num/all_pixel_num*100))
+#                 print('\ron scanning... {:.2f}%'.format(
+#                     current_pixel_num/all_pixel_num*100), end='')
+#     return pos, min_diff
 
 def get_screen(sct, monitor):
     screen = np.array(sct.grab(monitor))
