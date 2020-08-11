@@ -44,39 +44,25 @@ def find_img_pos_old(screen, img, count=1, dist=None, interval=5, verbose=False)
                 print('\ron scanning... {:.2f}%'.format(current_pixel_num/all_pixel_num*100), end='')
     return pos, min_commutative_image_diff
 
-def find_img_pos(screen, img, result=None, W_start=0, W_end=1280, single=True, interval=5, verbose=False):
-    s = time.time()
+def find_img_pos(screen, img, interval=5):
     H, W = screen.shape[0:2]
     h, w = img.shape[0:2]
     min_diff = 10000
     pos = np.array([0,0])
+    for i in range(0, H-h+1, interval):
+        for j in range(0, W-w+1, interval):
+            image_diff = get_image_difference(img, screen[i:i+h, j:j+w])
+            if min_diff > image_diff:
+                min_diff = image_diff
+                pos = np.array([i, j], dtype=np.int32)
 
-    if single:
-        for i in range(0, H-h+1, interval):
-            for j in range(0, W-w+1, interval):
-                image_diff = get_image_difference(img, screen[i:i+h, j:j+w])
-                if min_diff > image_diff:
-                    min_diff = image_diff
-                    pos = np.array([i, j], dtype=np.int32)
-        # print(time.time() - s)
-        return pos, min_diff
-
-    else:
-        W_min = min(W_end+1, W-w+1)
-        for i in range(0, H-h+1, interval):
-            for j in range(W_start, W_min, interval):
-                image_diff = get_image_difference(img, screen[i:i+h, j:j+w])
-                if min_diff > image_diff:
-                    min_diff = image_diff
-                    pos = np.array([i, j], dtype=np.int32)
-                    
-        result.put((pos, min_diff))
-        return
+    return pos, min_diff
 
 def find_img_pos_multi_target(screen, img, result, W_start, W_end, interval=5):
     H, W = screen.shape[0:2]
     h, w = img.shape[0:2]
     min_diff = 10000
+    pos = np.array([0,0])
     W_min = min(W_end+1, W-w+1)
     for i in range(0, H-h+1, interval):
         for j in range(W_start, W_min, interval):

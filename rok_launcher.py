@@ -53,7 +53,7 @@ class NoxManager:
         print('Now Find Nox Position')
         screen = get_screen(self.sct, self.sct.monitors[0])
         nox_img = cv2.imread(img_dict['nox'])
-        nox_pos,_nox_diff = find_img_pos(screen, nox_img, interval=10, verbose=verbose)
+        nox_pos,_nox_diff = find_img_pos(screen, nox_img, interval=10)
 
         print('\n')
         print('Refining Nox Position')
@@ -72,8 +72,7 @@ class NoxManager:
         around_screen = screen[nox_pos[0]-i:nox_pos[0]+2*nox_img.shape[0],
                                nox_pos[1]-j:nox_pos[1]+2*nox_img.shape[1]]
         nox_pos -= np.array([i, j])
-        nox_pos += find_img_pos(around_screen, nox_img,
-                                interval=1, verbose=verbose)[0]
+        nox_pos += find_img_pos(around_screen, nox_img, interval=1)[0]
         nox_pos[0] += nox_img.shape[0]
 
         print('\n')
@@ -89,8 +88,13 @@ class NoxManager:
         nox_monitor['left'] = self.nox_pos[1]
         return nox_monitor
 
-    def get_relative_pos(self, img_path, div=None, interval=5, verbose=False, single=True):
+    def get_relative_pos(self, img_path, div=None, interval=5, single=True, half=None):
         screen = get_screen(self.sct, self.nox_monitor)
+        if half=='left':
+            screen = screen[:,:640,:]
+        elif half=='right':
+            screen = screen[:,640:,:]
+        
         img = cv2.imread(img_path)
         if type(img) is None:
             print('Can not find {}'.format(img_path))
@@ -98,9 +102,13 @@ class NoxManager:
 
         pos, img_diff = (0,0), 1000
         if single:
-            pos, img_diff = find_img_pos(screen, img, interval=interval, verbose=verbose)
+            pos, img_diff = find_img_pos(screen, img, interval=interval)
+            if half=='right':
+                pos[1] += 640
         else:
             pos, img_diff = find_img_pos_multi(screen, img)
+            if half=='right':
+                pos[1] += 640
 
         if div==None:
             pos += (np.array(img.shape[0:2])/2).astype('int')
@@ -144,7 +152,12 @@ class NoxManager:
         for m_pos in pos_list:
             self.click_relative_pos(m_pos)
             time.sleep(0.5)
-            profile_pos, diff = self.get_relative_pos(img_path, div=div, single=single)
+            half = None
+            if m_pos[1] == MW_left:
+                half = 'left'
+            elif m_pos[1] == MW_right:
+                half = 'right'
+            profile_pos, diff = self.get_relative_pos(img_path, div=div, single=single, half=half)
             if verbose:
                 print('profile_diff: ', diff)
             if diff < diff_thr:
