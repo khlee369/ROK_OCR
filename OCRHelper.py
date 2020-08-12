@@ -27,8 +27,10 @@ class Player():
     def __str__(self):
         return self.name
 
-def bin_inv(img, thr=140, show=False):
+def bin_inv(img, thr=140, show=False, inv=True):
     ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY_INV)
+    if not inv:
+        ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY)
     ocr_result = pytesseract.image_to_string(thresh2)
     if show:
         plt.imshow(thresh2, 'gray')
