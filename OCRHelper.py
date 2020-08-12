@@ -21,11 +21,11 @@ class Player():
         self.name = None
         self.path = None
         # detail
-        self.kill_4T = -1
-        self.kill_5T = -1
-        self.death = -1
-        self.gathering = -1
-        self.assist = -1
+        self.kill_4T = -2
+        self.kill_5T = -2
+        self.death = -2
+        self.gathering = -2
+        self.assist = -2
     
     def __repr__(self):
         return self.name
@@ -46,7 +46,10 @@ def bin_inv(img, thr=140, show=False, inv=True):
     ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY_INV)
     if not inv:
         ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY)
-    ocr_result = pytesseract.image_to_string(thresh2)
+    # tesseract configuration, numbers only
+    config = ''
+    config = '-c tessedit_char_whitelist=0123456789'
+    ocr_result = pytesseract.image_to_string(thresh2, config=config)
     if show:
         plt.imshow(thresh2, 'gray')
         plt.show()
@@ -59,7 +62,7 @@ def str2num(strnum):
     if result.isdigit():
         return int(result)
     else:
-        return -1
+        return 0
 
 def load_id2name(file_path, id2name=None):
     # load xlsx file
@@ -167,9 +170,9 @@ def ocr_profiles_detail(profile_list, id2name=load_id2name('id2name.xlsx')):
 
         _, str_kill_4T = bin_inv(img_kill_4T, thr=80, inv=False)
         _, str_kill_5T = bin_inv(img_kill_5T, thr=80, inv=False)
-        _, str_death = bin_inv(img_death)
-        _, str_gathering = bin_inv(img_gathering)
-        _, str_assist = bin_inv(img_assist)
+        _, str_death = bin_inv(img_death, thr=145)
+        _, str_gathering = bin_inv(img_gathering, thr=120)
+        _, str_assist = bin_inv(img_assist, thr=120)
 
         kill_4T, kill_5T, death = str2num(str_kill_4T), str2num(str_kill_5T), str2num(str_death)
         gathering, assist = str2num(str_gathering), str2num(str_assist)
@@ -200,6 +203,38 @@ def Players2df(Players):
             'power' : p.power,
             'kill' : p.kill,
             'path' : p.path
+        }, ignore_index=True)
+
+    return df
+
+def Players2df_detail(Players):
+    df = {
+    'ID' : [],
+    'name' : [],
+    'power' : [],
+    'kill' : [],
+    'kill_4T' : [],
+    'kill_5T' : [],
+    'death' : [],
+    'gathering' : [],
+    'assist' : [],
+    'path' : [],
+    }
+    df = pd.DataFrame(df, dtype=int)
+
+    L = len(Players)
+    for ID, p in Players.items():
+        df = df.append({
+            'ID' : ID,
+            'name' : p.name,
+            'power' : p.power,
+            'kill' : p.kill,
+            'kill_4T' : p.kill_4T,
+            'kill_5T' : p.kill_5T,
+            'death' : p.death,
+            'gathering' : p.gathering,
+            'assist' : p.assist,
+            'path' : p.path,
         }, ignore_index=True)
 
     return df
