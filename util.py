@@ -8,7 +8,7 @@ import time
 from mss import mss
 from multiprocessing import Process, Queue
 
-import f
+import TargetFunction
 
 def random_sleep(sec):
     time.sleep(sec + 0.3*(np.random.rand()-0.5))
@@ -58,22 +58,6 @@ def find_img_pos(screen, img, interval=5):
 
     return pos, min_diff
 
-def find_img_pos_multi_target(screen, img, result, W_start, W_end, interval=5):
-    H, W = screen.shape[0:2]
-    h, w = img.shape[0:2]
-    min_diff = 10000
-    pos = np.array([0,0])
-    W_min = min(W_end+1, W-w+1)
-    for i in range(0, H-h+1, interval):
-        for j in range(W_start, W_min, interval):
-            image_diff = get_image_difference(img, screen[i:i+h, j:j+w])
-            if min_diff > image_diff:
-                min_diff = image_diff
-                pos = np.array([i, j], dtype=np.int32)
-                
-    result.put((pos, min_diff))
-    return
-
 def find_img_pos_multi(screen, img):
     s = time.time()
     H, W = screen.shape[0:2]
@@ -86,7 +70,7 @@ def find_img_pos_multi(screen, img):
     result = Queue()
     procs = []
     for i in range(4):
-        proc = Process(target=f.find_img_pos_multi_target, args=(screen, img, result, Ws[i], Ws[i+1]))
+        proc = Process(target=TargetFunction.find_img_pos_multi_target, args=(screen, img, result, Ws[i], Ws[i+1]))
         procs.append(proc)
         proc.start()
     
