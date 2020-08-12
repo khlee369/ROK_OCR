@@ -117,9 +117,9 @@ crop_dict = {
     'ID' : np.array([185, 216, 595, 672], dtype=int),
     'power' : np.array([290, 320, 690, 880], dtype=int),
     'kill' : np.array([290, 320, 880, 1050], dtype=int),
-    'kill_4T' : np.array([250, 270, 888, 988], dtype=int)
-    'kill_5T' : np.array([282, 302, 767, 867], dtype=int)
-    'death' : np.array([360, 390, 890, 1060], dtype=int)
-    'gathering' : np.array([490, 520, 890, 1060], dtype=int)
-    'assist' : np.array([540, 570, 890, 1060], dtype=int)
+    'kill_4T' : np.array([250, 270, 888, 988], dtype=int),
+    'kill_5T' : np.array([282, 302, 767, 867], dtype=int),
+    'death' : np.array([360, 390, 890, 1060], dtype=int),
+    'gathering' : np.array([490, 520, 890, 1060], dtype=int),
+    'assist' : np.array([540, 570, 890, 1060], dtype=int),
 }

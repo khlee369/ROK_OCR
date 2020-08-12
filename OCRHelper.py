@@ -20,12 +20,27 @@ class Player():
         self.kill = kill
         self.name = None
         self.path = None
+        # detail
+        self.kill_4T = -1
+        self.kill_5T = -1
+        self.death = -1
+        self.gathering = -1
+        self.assist = -1
     
     def __repr__(self):
         return self.name
 
     def __str__(self):
-        return self.name
+        name = "name : {}\n".format(self.name)
+        power = "power : {}\n".format(self.power)
+        kill = "kill : {}\n".format(self.kill)
+        kill_4T = "kill_4T : {}\n".format(self.kill_4T)
+        kill_5T = "kill_5T : {}\n".format(self.kill_5T)
+        death = "death : {}\n".format(self.death)
+        gathering = "gathering : {}\n".format(self.gathering)
+        assist = "assist : {}\n".format(self.assist)
+        output = name + power + kill + kill_4T + kill_5T + death + gathering + assist
+        return output
 
 def bin_inv(img, thr=140, show=False, inv=True):
     ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY_INV)
@@ -101,6 +116,69 @@ def ocr_profiles(profile_list, id2name=load_id2name('id2name.xlsx')):
         except KeyError:
             print('KeyError!! : checkt {}'.format(Players[ID].path))
             Players[ID].name = ''
+    return Players
+
+def ocr_profiles_detail(profile_list, id2name=load_id2name('id2name.xlsx')):
+    Players = dict([])
+    L = len(profile_list)
+    for i in range(0, L, 2):
+        print('{}/{}'.format(i+1,L))
+        fn = profile_list[i]
+        fn_detail = profile_list[i+1]
+        img = cv2.imread(fn,0)
+        img_detail = cv2.imread(fn_detail,0)
+
+        IDp = crop_dict['ID']
+        powerp = crop_dict['power']
+        killp = crop_dict['kill']
+        
+        img_ID = img[IDp[0]:IDp[1], IDp[2]:IDp[3]]
+        img_power = img[powerp[0]:powerp[1], powerp[2]:powerp[3]]
+        img_kill = img[killp[0]:killp[1], killp[2]:killp[3]]
+        
+        _, str_ID = bin_inv(img_ID)
+        _, str_power = bin_inv(img_power)
+        _, str_kill = bin_inv(img_kill)
+        
+        ID, power, kill = str2num(str_ID), str2num(str_power), str2num(str_kill)
+        
+        Players[ID] = Player(ID,power,kill)        
+        Players[ID].path = fn.split('\\')[-1]
+        
+        try:
+            Players[ID].name = id2name[ID]
+        except KeyError:
+            print('KeyError!! : checkt {}'.format(Players[ID].path))
+            Players[ID].name = ''
+
+        # detail
+        kill_4Tp = crop_dict['kill_4T']
+        kill_5Tp = crop_dict['kill_5T']
+        deathp = crop_dict['death']
+        gatheringp = crop_dict['gathering']
+        assistp = crop_dict['assist']
+
+        img_kill_4T = img_detail[kill_4Tp[0]:kill_4Tp[1], kill_4Tp[2]:kill_4Tp[3]]
+        img_kill_5T = img_detail[kill_5Tp[0]:kill_5Tp[1], kill_5Tp[2]:kill_5Tp[3]]
+        img_death = img_detail[deathp[0]:deathp[1], deathp[2]:deathp[3]]
+        img_gathering = img_detail[gatheringp[0]:gatheringp[1], gatheringp[2]:gatheringp[3]]
+        img_assist = img_detail[assistp[0]:assistp[1], assistp[2]:assistp[3]]
+
+        _, str_kill_4T = bin_inv(img_kill_4T, inv=False)
+        _, str_kill_5T = bin_inv(img_kill_5T, inv=False)
+        _, str_death = bin_inv(img_death)
+        _, str_gathering = bin_inv(img_gathering)
+        _, str_assist = bin_inv(img_assist)
+
+        kill_4T, kill_5T, death = str2num(str_kill_4T), str2num(str_kill_5T), str2num(str_death)
+        gathering, assist = str2num(str_gathering), str2num(str_assist)
+
+        Players[ID].kill_4T = kill_4T
+        Players[ID].kill_5T = kill_5T
+        Players[ID].death = death
+        Players[ID].gathering = gathering
+        Players[ID].assist = assist
+
     return Players
 
 def Players2df(Players):

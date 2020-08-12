@@ -290,7 +290,7 @@ class NoxManager:
             cnt += 1
 
 
-    def capture_members_all(self, other=False):
+    def capture_members_all(self, other=False, single=False):
         print()
         print('------------------------------------------')
         input('Run Rise of Kingdoms and Open the menu to show alliance tab')
@@ -302,10 +302,10 @@ class NoxManager:
         print('Now start to capture')
 
         self.capture_leader(other=other)
-        self.capture_R4(other=other)
-        self.capture_R3(other=other)
-        self.capture_R2(other=other)
-        self.capture_R1(other=other)
+        self.capture_R4(other=other, single=single)
+        self.capture_R3(other=other, single=single)
+        self.capture_R2(other=other, single=single)
+        self.capture_R1(other=other, single=single)
 
 
     # def get_main_menu_pos(self):
