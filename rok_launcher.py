@@ -46,7 +46,6 @@ class NoxManager:
         # self.get_main_menu_pos()
 
 
-
     def get_nox_pos(self, verbose=False):
         print('-------------------------------------')
         input('Run Nox Application and Press Any Key')
@@ -103,12 +102,10 @@ class NoxManager:
         pos, img_diff = (0,0), 1000
         if single:
             pos, img_diff = find_img_pos(screen, img, interval=interval)
-            if half=='right':
-                pos[1] += 640
         else:
             pos, img_diff = find_img_pos_multi(screen, img)
-            if half=='right':
-                pos[1] += 640
+        if half=='right':
+            pos[1] += 640
 
         if div==None:
             pos += (np.array(img.shape[0:2])/2).astype('int')
@@ -147,8 +144,7 @@ class NoxManager:
             self.click_relative_pos(capture_pos)
             time.sleep(0.5)
 
-
-    def capture_members(self, pos_list, img_path, div, diff_thr=0.04, verbose=False, single=False):
+    def capture_members(self, pos_list, img_path, div, diff_thr=0.04, verbose=False, single=False, detail=False):
         for m_pos in pos_list:
             self.click_relative_pos(m_pos)
             time.sleep(0.5)
@@ -165,31 +161,40 @@ class NoxManager:
                 time.sleep(0.5)
                 self.capture()
                 time.sleep(0.5)
+                if detail:
+                    self.click_relative_pos(more_info_pos)
+                    time.sleep(0.3)
+                    self.click_relative_pos(kill_info_pos)
+                    time.sleep(0.2)
+                    self.capture()
+                    time.sleep(0.5)
+                    self.click_relative_pos(detail_close_pos)
+                    time.sleep(0.5)
                 self.click_relative_pos(profile_close_pos)
                 time.sleep(0.5)
 
-    def capture_leader(self, other=False):
+    def capture_leader(self, other=False, detail=False):
         menus = '4menus'
         div = 1
         if other:
             menus = '2menus'
             div = 3
 
-        self.capture_members([leader_pos], img_dict[menus], div=div)
+        self.capture_members([leader_pos], img_dict[menus], div=div, detail=detail)
 
-    def capture_R4(self, other=False, single=False):
+    def capture_R4(self, other=False, single=False, detail=False):
         menus = '4menus'
         div = 1
         if other:
             menus = '2menus'
             div = 3
 
-        self.capture_members(R4_pos_U, img_dict[menus], div=div, single=single)
+        self.capture_members(R4_pos_U, img_dict[menus], div=div, single=single, detail=detail)
         R3_pos, R3_diff = self.get_relative_pos(img_dict['R3'])
         if R3_pos[0] > R3_thr:
-            self.capture_members(R4_pos_D, img_dict[menus], div=div, single=single)
+            self.capture_members(R4_pos_D, img_dict[menus], div=div, single=single, detail=detail)
 
-    def capture_R3(self, dragged=False, other=False, single=False):
+    def capture_R3(self, dragged=False, other=False, single=False, detail=False):
         menus = '7menus'
         div = 2
         if other:
@@ -208,16 +213,16 @@ class NoxManager:
 
         # 멤버수가 4명,6명 보다 적은경우 에러가 날 수 있음
         while(not last_line and cnt < max_cnt):
-            self.capture_members(members_pos, img_dict[menus], div=div, single=single)
+            self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
             self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
             R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
             print('R1 diff : ', R1_diff)
             if R1_diff < diff_thr:
                 last_line = True
-                self.capture_members(members_pos, img_dict[menus], div=div, single=single)
+                self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
             cnt += 1
 
-    def capture_R2(self, dragged=False, other=False, single=False):
+    def capture_R2(self, dragged=False, other=False, single=False, detail=False):
         menus = '7menus'
         div = 2
         if other:
@@ -235,20 +240,20 @@ class NoxManager:
         cnt = 0
 
         while(not last_line and cnt < max_cnt):
-            self.capture_members(members_pos, img_dict[menus], div=div, single=single)
+            self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
             self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
             R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
             print('R1 diff : ', R1_diff)
             if R1_diff < diff_thr:
                 last_line = True
-                self.capture_members(members_pos, img_dict[menus], div=div, single=single)
+                self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
             cnt += 1
 
         # 맨마지막줄은 캡쳐가 안됨으로 추가
         last_members = [[MHs[4], MW_left], [MHs[4], MW_right]]
-        self.capture_members(last_members, img_dict[menus], div=div, single=single)
+        self.capture_members(last_members, img_dict[menus], div=div, single=single, detail=detail)
 
-    def capture_R1(self, dragged=False, other=False, single=False):
+    def capture_R1(self, dragged=False, other=False, single=False, detail=False):
         menus = '7menus'
         div = 2
         if other:
@@ -272,7 +277,7 @@ class NoxManager:
                        [MHs[4], MW_right],
                        [MHs[5], MW_right]]
             members6_pos = np.vstack([members_pos, extend6])
-            self.capture_members(members6_pos, img_dict[menus], div=div, single=single)
+            self.capture_members(members6_pos, img_dict[menus], div=div, single=single, detail=detail)
 
             # 마지막줄 캡쳐 -> 드래그 -> 비교
             sct_img = self.sct.grab(self.r1_monitor)
@@ -290,7 +295,7 @@ class NoxManager:
             cnt += 1
 
 
-    def capture_members_all(self, other=False, single=False):
+    def capture_members_all(self, other=False, single=True, detail=False):
         print()
         print('------------------------------------------')
         input('Run Rise of Kingdoms and Open the menu to show alliance tab')
@@ -301,11 +306,11 @@ class NoxManager:
         print('------------------------------------------')
         print('Now start to capture')
 
-        self.capture_leader(other=other)
-        self.capture_R4(other=other, single=single)
-        self.capture_R3(other=other, single=single)
-        self.capture_R2(other=other, single=single)
-        self.capture_R1(other=other, single=single)
+        self.capture_leader(other=other, detail=detail)
+        self.capture_R4(other=other, single=single, detail=detail)
+        self.capture_R3(other=other, single=single, detail=detail)
+        self.capture_R2(other=other, single=single, detail=detail)
+        self.capture_R1(other=other, single=single, detail=detail)
 
 
     # def get_main_menu_pos(self):
