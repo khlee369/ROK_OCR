@@ -10,6 +10,9 @@ capture_pos = np.array([145, 1372])
 profile_close_pos = np.array([89, 1091])
 nox_menu_pos = np.array([469, 1311])
 leader_pos = np.array([149, 443])
+more_info_pos = np.array([544, 308])
+kill_info_pos = np.array([130, 865])
+detail_close_pos = np.array([46, 1116])
 
 R4_H1 = 355
 R4_H2 = 480
