@@ -55,11 +55,11 @@ def bin_inv(img, thr=140, show=False, inv=True):
 
 def str2num(strnum):
     # remove ',' and '.'
-    result = strnum.replace(',', '').replace('.', '')
+    result = strnum.replace(',', '').replace('.', '').replace(' ','')
     if result.isdigit():
         return int(result)
     else:
-        return 0
+        return -1
 
 def load_id2name(file_path, id2name=None):
     # load xlsx file
@@ -122,7 +122,7 @@ def ocr_profiles_detail(profile_list, id2name=load_id2name('id2name.xlsx')):
     Players = dict([])
     L = len(profile_list)
     for i in range(0, L, 2):
-        print('{}/{}'.format(i+1,L))
+        print('{}/{} : profile processing'.format(i+1,L))
         fn = profile_list[i]
         fn_detail = profile_list[i+1]
         img = cv2.imread(fn,0)
@@ -152,6 +152,7 @@ def ocr_profiles_detail(profile_list, id2name=load_id2name('id2name.xlsx')):
             Players[ID].name = ''
 
         # detail
+        print('{}/{} : detail processing'.format(i+2,L))
         kill_4Tp = crop_dict['kill_4T']
         kill_5Tp = crop_dict['kill_5T']
         deathp = crop_dict['death']
@@ -164,8 +165,8 @@ def ocr_profiles_detail(profile_list, id2name=load_id2name('id2name.xlsx')):
         img_gathering = img_detail[gatheringp[0]:gatheringp[1], gatheringp[2]:gatheringp[3]]
         img_assist = img_detail[assistp[0]:assistp[1], assistp[2]:assistp[3]]
 
-        _, str_kill_4T = bin_inv(img_kill_4T, inv=False)
-        _, str_kill_5T = bin_inv(img_kill_5T, inv=False)
+        _, str_kill_4T = bin_inv(img_kill_4T, thr=80, inv=False)
+        _, str_kill_5T = bin_inv(img_kill_5T, thr=80, inv=False)
         _, str_death = bin_inv(img_death)
         _, str_gathering = bin_inv(img_gathering)
         _, str_assist = bin_inv(img_assist)
