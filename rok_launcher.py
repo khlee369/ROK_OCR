@@ -214,11 +214,14 @@ class NoxManager:
         # 멤버수가 4명,6명 보다 적은경우 에러가 날 수 있음
         while(not last_line and cnt < max_cnt):
             self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
-            self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
-            R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
-            print('R1 diff : ', R1_diff)
-            if R1_diff < diff_thr:
-                last_line = True
+            # self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
+            # R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
+            # print('R1 diff : ', R1_diff)
+            # if R1_diff < diff_thr:
+            #     last_line = True
+            #     self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
+            last_line = self.check_lastline(drag=4)
+            if last_line:
                 self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
             cnt += 1
 
@@ -241,11 +244,14 @@ class NoxManager:
 
         while(not last_line and cnt < max_cnt):
             self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
-            self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
-            R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
-            print('R1 diff : ', R1_diff)
-            if R1_diff < diff_thr:
-                last_line = True
+            # self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
+            # R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
+            # print('R1 diff : ', R1_diff)
+            # if R1_diff < diff_thr:
+            #     last_line = True
+            #     self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
+            last_line = self.check_lastline(drag=4)
+            if last_line:
                 self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
             cnt += 1
 
@@ -280,20 +286,39 @@ class NoxManager:
             self.capture_members(members6_pos, img_dict[menus], div=div, single=single, detail=detail)
 
             # 마지막줄 캡쳐 -> 드래그 -> 비교
-            sct_img = self.sct.grab(self.r1_monitor)
-            to_png(sct_img.rgb, sct_img.size, output=img_dict['r1_lastline'])
+            # sct_img = self.sct.grab(self.r1_monitor)
+            # to_png(sct_img.rgb, sct_img.size, output=img_dict['r1_lastline'])
             
-            self.relative_drag(md_drag_from6, md_drag_to6, delay=1.0)
-            time.sleep(1.0)
+            # self.relative_drag(md_drag_from6, md_drag_to6, delay=1.0)
+            # time.sleep(1.0)
 
-            screen = get_screen(self.sct, self.r1_monitor10)
-            r1_lastline_img = cv2.imread(img_dict['r1_lastline'])
-            _, lastline_diff = find_img_pos(screen, r1_lastline_img, interval=1)
+            # screen = get_screen(self.sct, self.r1_monitor10)
+            # r1_lastline_img = cv2.imread(img_dict['r1_lastline'])
+            # _, lastline_diff = find_img_pos(screen, r1_lastline_img, interval=1)
 
-            if lastline_diff < 0.005:
-                last_line = True
+            # if lastline_diff < 0.005:
+            #     last_line = True
+            last_line = self.check_lastline(drag=6)
             cnt += 1
 
+    def check_lastline(self, drag=6):
+        last_line = False
+        sct_img = self.sct.grab(self.r1_monitor)
+        to_png(sct_img.rgb, sct_img.size, output=img_dict['r1_lastline'])
+        
+        if drag == 6:
+            self.relative_drag(md_drag_from6, md_drag_to6, delay=1.0)
+        else:
+            self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
+        time.sleep(1.0)
+
+        screen = get_screen(self.sct, self.r1_monitor10)
+        r1_lastline_img = cv2.imread(img_dict['r1_lastline'])
+        _, lastline_diff = find_img_pos(screen, r1_lastline_img, interval=1)
+
+        if lastline_diff < 0.005:
+            last_line = True
+        return last_line
 
     def capture_members_all(self, other=False, single=True, detail=False):
         print()
