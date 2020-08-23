@@ -42,7 +42,7 @@ class Player():
         output = name + power + kill + kill_4T + kill_5T + death + gathering + assist
         return output
 
-def bin_inv(img, thr=140, show=False, inv=True):
+def bin_inv(img, thr=145, show=False, inv=True):
     ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY_INV)
     if not inv:
         ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY)
@@ -106,8 +106,8 @@ def ocr_profiles(profile_list, id2name=load_id2name('id2name.xlsx')):
         img_kill = img[killp[0]:killp[1], killp[2]:killp[3]]
         
         _, str_ID = bin_inv(img_ID)
-        _, str_power = bin_inv(img_power)
-        _, str_kill = bin_inv(img_kill)
+        _, str_power = bin_inv(img_power, thr=150)
+        _, str_kill = bin_inv(img_kill, thr=150)
         
         ID, power, kill = str2num(str_ID), str2num(str_power), str2num(str_kill)
         
@@ -140,8 +140,8 @@ def ocr_profiles_detail(profile_list, id2name=load_id2name('id2name.xlsx')):
         img_kill = img[killp[0]:killp[1], killp[2]:killp[3]]
         
         _, str_ID = bin_inv(img_ID)
-        _, str_power = bin_inv(img_power)
-        _, str_kill = bin_inv(img_kill)
+        _, str_power = bin_inv(img_power, thr=150)
+        _, str_kill = bin_inv(img_kill, thr=150)
         
         ID, power, kill = str2num(str_ID), str2num(str_power), str2num(str_kill)
         
