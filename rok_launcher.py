@@ -156,7 +156,9 @@ class NoxManager:
             profile_pos, diff = self.get_relative_pos(img_path, div=div, single=single, half=half)
             if verbose:
                 print('profile_diff: ', diff)
+            print('profile_diff: ', diff)
             if diff < diff_thr:
+                print('CAPTURE!')
                 self.click_relative_pos(profile_pos)
                 time.sleep(0.5)
                 self.capture()
