@@ -47,9 +47,14 @@ def bin_inv(img, thr=145, show=False, inv=True):
     if not inv:
         ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY)
     # tesseract configuration, numbers only
-    config = ''
-    config = '-c tessedit_char_whitelist=0123456789'
-    ocr_result = pytesseract.image_to_string(thresh2, config=config)
+    # config가 오히려 에러를 발견하기 힘들게 함
+    # config = ''
+    # config = '-c tessedit_char_whitelist=0123456789'
+    ocr_result = pytesseract.image_to_string(thresh2)
+    str_result = ocr_result.replace(',', '').replace('.', '').replace(' ','')
+    # 숫자가 0만 있는경우 np.mean 값이 255에 가까움
+    if not str_result.isdigit() and np.mean(thresh2) > 248:
+        ocr_result = '0'
     if show:
         plt.imshow(thresh2, 'gray')
         plt.show()
@@ -62,7 +67,7 @@ def str2num(strnum):
     if result.isdigit():
         return int(result)
     else:
-        return 0
+        return -1
 
 def load_id2name(file_path, id2name=None):
     # load xlsx file
