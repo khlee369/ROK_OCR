@@ -74,7 +74,7 @@ img_dict = {
 r3r2_H_to = 170
 
 md_drag_from6 = np.array([510, 200])
-md_drag_to6 = np.array([10, 200])
+md_drag_to6 = np.array([15, 200])
 
 md_drag_from4 = np.array([500, 200])
 md_drag_to4 = np.array([170, 200])
@@ -118,7 +118,7 @@ profile_path = './Screenshots/'
 
 crop_dict = {
     'ID' : np.array([185, 216, 595, 672], dtype=int),
-    'power' : np.array([290, 320, 690, 880], dtype=int),
+    'power' : np.array([290, 320, 705, 880], dtype=int),
     'kill' : np.array([290, 320, 880, 1050], dtype=int),
     'kill_4T' : np.array([250, 270, 887, 988], dtype=int),
     'kill_5T' : np.array([282, 302, 764, 867], dtype=int),
