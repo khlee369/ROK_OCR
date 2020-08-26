@@ -223,8 +223,8 @@ class NoxManager:
             #     last_line = True
             #     self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
             last_line = self.check_lastline(drag=4)
-            if last_line:
-                self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
+            # if last_line:
+            #     self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
             cnt += 1
 
     def capture_R2(self, dragged=False, other=False, single=False, detail=False):
@@ -253,8 +253,8 @@ class NoxManager:
             #     last_line = True
             #     self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
             last_line = self.check_lastline(drag=4)
-            if last_line:
-                self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
+            # if last_line:
+            #     self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
             cnt += 1
 
         # 맨마지막줄은 캡쳐가 안됨으로 추가
@@ -304,6 +304,7 @@ class NoxManager:
             cnt += 1
 
     def check_lastline(self, drag=6):
+        print('CHECKING LAST LINE')
         last_line = False
         sct_img = self.sct.grab(self.r1_monitor)
         to_png(sct_img.rgb, sct_img.size, output=img_dict['r1_lastline'])
