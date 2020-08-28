@@ -44,7 +44,7 @@ def find_img_pos_old(screen, img, count=1, dist=None, interval=5, verbose=False)
                 print('\ron scanning... {:.2f}%'.format(current_pixel_num/all_pixel_num*100), end='')
     return pos, min_commutative_image_diff
 
-def find_img_pos(screen, img, interval=5):
+def find_img_pos(screen, img, interval=5, offset=None):
     H, W = screen.shape[0:2]
     h, w = img.shape[0:2]
     min_diff = 10000
@@ -55,7 +55,8 @@ def find_img_pos(screen, img, interval=5):
             if min_diff > image_diff:
                 min_diff = image_diff
                 pos = np.array([i, j], dtype=np.int32)
-
+    if offset:
+        pos += offset
     return pos, min_diff
 
 def find_img_pos_multi(screen, img):
