@@ -14,6 +14,9 @@ more_info_pos = np.array([544, 308])
 kill_info_pos = np.array([130, 865])
 detail_close_pos = np.array([46, 1116])
 
+# h, w
+rank_offset = (220, 160)
+
 R4_H1 = 355
 R4_H2 = 480
 R4_Ws = [220, 460, 700, 930]
