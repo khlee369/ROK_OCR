@@ -144,8 +144,14 @@ class NoxManager:
             self.click_relative_pos(capture_pos)
             time.sleep(0.5)
 
-    def capture_members(self, pos_list, img_path, div, diff_thr=0.04, verbose=False, single=False, detail=False):
+    # rank == 'leader' or 'R4' or 'R3' or 'R2' or 'R1'
+    def capture_members(self, pos_list, img_path, rank, div, diff_thr=0.04, verbose=False, single=False, detail=False):
+        tbound, bbound = self.check_bound(rank)
+        print(tbound, bbound)
         for m_pos in pos_list:
+            # bound checking
+            if m_pos[0] < tbound or m_pos[0] > bbound or bbound - tbound < 100:
+                continue
             self.click_relative_pos(m_pos)
             time.sleep(0.5)
             half = None
@@ -156,7 +162,7 @@ class NoxManager:
             profile_pos, diff = self.get_relative_pos(img_path, div=div, single=single, half=half)
             if verbose:
                 print('profile_diff: ', diff)
-            print('profile_diff: ', diff)
+            # print('profile_diff: ', diff)
             if diff < diff_thr:
                 print('CAPTURE!')
                 self.click_relative_pos(profile_pos)
@@ -182,7 +188,7 @@ class NoxManager:
             menus = '2menus'
             div = 3
 
-        self.capture_members([leader_pos], img_dict[menus], div=div, detail=detail)
+        self.capture_members([leader_pos], img_dict[menus], 'leader', div=div, detail=detail)
 
     def capture_R4(self, other=False, single=False, detail=False):
         menus = '4menus'
@@ -191,10 +197,10 @@ class NoxManager:
             menus = '2menus'
             div = 3
 
-        self.capture_members(R4_pos_U, img_dict[menus], div=div, single=single, detail=detail)
+        self.capture_members(R4_pos_U, img_dict[menus], 'R4', div=div, single=single, detail=detail)
         R3_pos, R3_diff = self.get_relative_pos(img_dict['R3'])
         if R3_pos[0] > R3_thr:
-            self.capture_members(R4_pos_D, img_dict[menus], div=div, single=single, detail=detail)
+            self.capture_members(R4_pos_D, img_dict[menus], 'R4', div=div, single=single, detail=detail)
 
     def capture_R3(self, dragged=False, other=False, single=False, detail=False):
         menus = '7menus'
@@ -215,7 +221,7 @@ class NoxManager:
 
         # 멤버수가 4명,6명 보다 적은경우 에러가 날 수 있음
         while(not last_line and cnt < max_cnt):
-            self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
+            self.capture_members(members_pos, img_dict[menus], 'R3', div=div, single=single, detail=detail)
             # self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
             # R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
             # print('R1 diff : ', R1_diff)
@@ -245,7 +251,7 @@ class NoxManager:
         cnt = 0
 
         while(not last_line and cnt < max_cnt):
-            self.capture_members(members_pos, img_dict[menus], div=div, single=single, detail=detail)
+            self.capture_members(members_pos, img_dict[menus], 'R2', div=div, single=single, detail=detail)
             # self.relative_drag(md_drag_from4, md_drag_to4, delay=1.0)
             # R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
             # print('R1 diff : ', R1_diff)
@@ -259,7 +265,7 @@ class NoxManager:
 
         # 맨마지막줄은 캡쳐가 안됨으로 추가
         last_members = [[MHs[4], MW_left], [MHs[4], MW_right]]
-        self.capture_members(last_members, img_dict[menus], div=div, single=single, detail=detail)
+        self.capture_members(last_members, img_dict[menus], 'R2', div=div, single=single, detail=detail)
 
     def capture_R1(self, dragged=False, other=False, single=False, detail=False):
         menus = '7menus'
@@ -285,7 +291,7 @@ class NoxManager:
                        [MHs[4], MW_right],
                        [MHs[5], MW_right]]
             members6_pos = np.vstack([members_pos, extend6])
-            self.capture_members(members6_pos, img_dict[menus], div=div, single=single, detail=detail)
+            self.capture_members(members6_pos, img_dict[menus], 'R2', div=div, single=single, detail=detail)
 
             # 마지막줄 캡쳐 -> 드래그 -> 비교
             # sct_img = self.sct.grab(self.r1_monitor)
@@ -323,6 +329,38 @@ class NoxManager:
             last_line = True
         return last_line
 
+    def check_bound(self, rank):
+        time.sleep(0.4)
+        s = time.time()
+        print('Check bound')
+        # diff_thr = 0.023
+        tbound, bbound = 0, 700
+        if rank == 'R3':
+            R3_pos, R3_diff = self.get_relative_pos(img_dict['R3'])
+            R2_pos, R2_diff = self.get_relative_pos(img_dict['R2'])
+            print('T DIFF : {}'.format(R3_diff))
+            print('B DIFF : {}'.format(R2_diff))
+            if R3_diff < diff_thr:
+                tbound = R3_pos[0]
+            if R2_diff < diff_thr:
+                bbound = R2_pos[0]
+        elif rank == 'R2':
+            R2_pos, R2_diff = self.get_relative_pos(img_dict['R2'])
+            R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
+            print('T DIFF : {}'.format(R2_diff))
+            print('B DIFF : {}'.format(R1_diff))
+            if R2_diff < diff_thr:
+                tbound = R2_pos[0]
+            if R1_diff < diff_thr:
+                bbound = R1_pos[0]
+        elif rank == 'R1':
+            R1_pos, R1_diff = self.get_relative_pos(img_dict['R1'])
+            print('T DIFF : {}'.format(R1_diff))
+            if R1_diff < diff_thr:
+                tbound = R1_pos[0]
+        print('Check bound TIME : {}'.format(time.time()- s))
+
+        return tbound, bbound
     def capture_members_all(self, other=False, single=True, detail=False):
         print()
         print('------------------------------------------')
