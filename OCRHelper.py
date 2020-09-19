@@ -51,7 +51,7 @@ def bin_inv(img, thr=145, show=False, inv=True):
     # config = ''
     # config = '-c tessedit_char_whitelist=0123456789'
     ocr_result = pytesseract.image_to_string(thresh2)
-    str_result = ocr_result.replace(',', '').replace('.', '').replace(' ','')
+    str_result = ocr_result.replace(',', '').replace('.', '').replace(' ','').strip()
     # 숫자가 0만 있는경우 np.mean 값이 255에 가까움
     if not str_result.isdigit() and np.mean(thresh2) > 248:
         ocr_result = '0'
@@ -63,7 +63,7 @@ def bin_inv(img, thr=145, show=False, inv=True):
 
 def str2num(strnum):
     # remove ',' and '.'
-    result = strnum.replace(',', '').replace('.', '').replace(' ','')
+    result = strnum.replace(',', '').replace('.', '').replace(' ','').strip()
     if result.isdigit():
         return int(result)
     else:
