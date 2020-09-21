@@ -42,9 +42,23 @@ class Player():
         output = name + power + kill + kill_4T + kill_5T + death + gathering + assist
         return output
 
+def img_ocr(img, thr=145, inv=True):
+    if inv:
+        ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY_INV)
+    elif not inv:
+        ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY)
+    ocr_result = pytesseract.image_to_string(thresh2)
+    str_result = ocr_result.replace(',', '').replace('.', '').replace(' ','').strip()
+    if str_result.isdigit():
+        result = int(str_result)
+    else:
+        result = 0
+    return result
+
 def bin_inv(img, thr=145, show=False, inv=True):
-    ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY_INV)
-    if not inv:
+    if inv:
+        ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY_INV)
+    elif not inv:
         ret,thresh2 = cv2.threshold(img,thr,255,cv2.THRESH_BINARY)
     # tesseract configuration, numbers only
     # config가 오히려 에러를 발견하기 힘들게 함
@@ -55,10 +69,19 @@ def bin_inv(img, thr=145, show=False, inv=True):
     # 숫자가 0만 있는경우 np.mean 값이 255에 가까움
     if not str_result.isdigit() and np.mean(thresh2) > 248:
         ocr_result = '0'
+
+    elif not str_result.isdigit():
+        for offset in [-20, -10, 10, 20]:
+            tmp_r = img_ocr(img, thr+offset, inv)
+            if tmp_r:
+                ocr_result = str(tmp_r)
+                break
+
     if show:
         plt.imshow(thresh2, 'gray')
         plt.show()
         print(ocr_result)
+
     return thresh2, ocr_result
 
 def str2num(strnum):
@@ -164,29 +187,29 @@ def ocr_profiles_detail(profile_list, id2name=load_id2name('id2name.xlsx')):
         kill_4Tp = crop_dict['kill_4T']
         kill_5Tp = crop_dict['kill_5T']
         deathp = crop_dict['death']
-        gatheringp = crop_dict['gathering']
-        assistp = crop_dict['assist']
+        # gatheringp = crop_dict['gathering']
+        # assistp = crop_dict['assist']
 
         img_kill_4T = img_detail[kill_4Tp[0]:kill_4Tp[1], kill_4Tp[2]:kill_4Tp[3]]
         img_kill_5T = img_detail[kill_5Tp[0]:kill_5Tp[1], kill_5Tp[2]:kill_5Tp[3]]
         img_death = img_detail[deathp[0]:deathp[1], deathp[2]:deathp[3]]
-        img_gathering = img_detail[gatheringp[0]:gatheringp[1], gatheringp[2]:gatheringp[3]]
-        img_assist = img_detail[assistp[0]:assistp[1], assistp[2]:assistp[3]]
+        # img_gathering = img_detail[gatheringp[0]:gatheringp[1], gatheringp[2]:gatheringp[3]]
+        # img_assist = img_detail[assistp[0]:assistp[1], assistp[2]:assistp[3]]
 
         _, str_kill_4T = bin_inv(img_kill_4T, thr=80, inv=False)
         _, str_kill_5T = bin_inv(img_kill_5T, thr=80, inv=False)
         _, str_death = bin_inv(img_death, thr=145)
-        _, str_gathering = bin_inv(img_gathering, thr=120)
-        _, str_assist = bin_inv(img_assist, thr=120)
+        # _, str_gathering = bin_inv(img_gathering, thr=120)
+        # _, str_assist = bin_inv(img_assist, thr=120)
 
         kill_4T, kill_5T, death = str2num(str_kill_4T), str2num(str_kill_5T), str2num(str_death)
-        gathering, assist = str2num(str_gathering), str2num(str_assist)
+        # gathering, assist = str2num(str_gathering), str2num(str_assist)
 
         Players[ID].kill_4T = kill_4T
         Players[ID].kill_5T = kill_5T
         Players[ID].death = death
-        Players[ID].gathering = gathering
-        Players[ID].assist = assist
+        # Players[ID].gathering = gathering
+        # Players[ID].assist = assist
 
     return Players
 
@@ -221,8 +244,8 @@ def Players2df_detail(Players):
     'kill_4T' : [],
     'kill_5T' : [],
     'death' : [],
-    'gathering' : [],
-    'assist' : [],
+    # 'gathering' : [],
+    # 'assist' : [],
     'path' : [],
     }
     df = pd.DataFrame(df, dtype=int)
@@ -237,8 +260,8 @@ def Players2df_detail(Players):
             'kill_4T' : p.kill_4T,
             'kill_5T' : p.kill_5T,
             'death' : p.death,
-            'gathering' : p.gathering,
-            'assist' : p.assist,
+            # 'gathering' : p.gathering,
+            # 'assist' : p.assist,
             'path' : p.path,
         }, ignore_index=True)
 
