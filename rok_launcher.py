@@ -180,7 +180,7 @@ class NoxManager:
                 time.sleep(0.5)
                 if detail:
                     self.click_relative_pos(more_info_pos)
-                    time.sleep(0.4)
+                    time.sleep(0.5)
                     self.click_relative_pos(kill_info_pos)
                     time.sleep(0.2)
                     self.capture()
