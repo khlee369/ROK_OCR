@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import glob
 import cv2
 import pandas as pd
+import datetime
 
 from configs import *
 
@@ -41,6 +42,16 @@ class Player():
         assist = "assist : {}\n".format(self.assist)
         output = name + power + kill + kill_4T + kill_5T + death + gathering + assist
         return output
+
+    def __sub__(self, other):
+        P = Player(self.ID, self.power, self.kill)
+        P.name = self.name
+        P.power = self.power - other.power
+        P.kill = self.kill - other.kill
+        P.kill_4T = self.kill_4T - other.kill_4T
+        P.kill_5T = self.kill_5T - other.kill_5T
+        P.death = self.death - other.death
+        return P
 
 def img_ocr(img, thr=145, inv=True):
     if inv:
@@ -283,3 +294,52 @@ def save_id2name(id2name, filename='id2name_new.xlsx'):
     df_xlsx.to_excel(filename, index=False)    
     print('Save id2name as {}'.format(filename))
     return df_xlsx
+
+def load_profiles(file_path):
+    try:
+        df = pd.read_excel(file_path)
+        print('Loaded {}'.format(file_path))
+    except FileNotFoundError:
+        print('No such file or directory {}'.format(file_path))
+        print('Function will return empty dictionary')
+        return dict([])
+    
+    Players = dict([])
+
+    for i in range(len(df)):
+        row = df.loc[i]
+        P = Player(row['ID'], row['power'], row['kill'])
+        P.name = row['name']
+        P.kill_4T = row['kill_4T']
+        P.kill_5T = row['kill_5T']
+        P.death = row['death']
+
+        Players[row['ID']] = P
+    
+    return Players
+
+def calc_diff(curr_path, past_path):
+    P_curr = load_profiles(curr_path)
+    P_past = load_profiles(past_path)
+
+    Players = dict([])
+    News = dict([])
+
+    for pid in P_curr.keys():
+        if P_past.get(pid):
+            Players[pid] = P_curr[pid] - P_past[pid]
+            Players[pid].path = P_curr[pid].power
+        else:
+            News[pid] = P_curr[pid]
+
+    df_Players = Players2df_detail(Players)
+    df_News = Players2df_detail(News)
+
+    return df_Players, df_News
+
+def df2xlsx(df, name):
+    dt = datetime.datetime.now()
+    output_name = '-'.join([str(dt.year), str(dt.month), str(dt.day)])
+    output_name = output_name + '-' + name
+    df.to_excel(output_name + '.xlsx', index=False)
+    print('{} is  Saved'.format(output_name))
